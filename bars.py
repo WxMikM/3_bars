@@ -36,7 +36,7 @@ def get_smallest_bar(list_bars):
 
 
 def get_closest_bar(list_bars, longitude, latitude):
-    if not list_bars:
+    if not list_bars or not longitude or not latitude:
         return None
     closest_bar_now = list_bars[0]
     min_distance_now = math.sqrt((float(list_bars[0]['geoData']['coordinates'][0]) - longitude) ** 2 +
@@ -52,18 +52,17 @@ def get_closest_bar(list_bars, longitude, latitude):
 
 
 if __name__ == '__main__':
-    data = load_bars_from_file(my_path)
-    if data is None:
+    list_bars = load_bars_from_file(my_path)
+    if list_bars is None:
         print('путь к файлу не существует')
     else:
-        biggest_bar = get_biggest_bar(data)
+        biggest_bar = get_biggest_bar(list_bars)
         print('Ничего не найдено' if biggest_bar is None else
               'Самый большой бар "{0}", в нем {1} мест'.format(biggest_bar['Name'], biggest_bar['SeatsCount']))
 
-        smallest_bar = get_smallest_bar(data)
+        smallest_bar = get_smallest_bar(list_bars)
         print('Ничего не найдено' if smallest_bar is None else
               'Самый маленький бар "{0}", в нем {1} мест'.format(smallest_bar['Name'], smallest_bar['SeatsCount']))
-
 
         try:
             longitude = float(input('Введите долготу: '))
@@ -75,11 +74,8 @@ if __name__ == '__main__':
         except ValueError:
             latitude = None
 
-        if not longitude or not latitude:
-            print('Введены неверные координаты.')
-        else:
-            closest_bar = get_closest_bar(data, longitude, latitude)
-            print('Ничего не найдено' if closest_bar is None else
-                  'Ближайший бар "{0}", координаты ({1}, {2})'
-                  .format(closest_bar['Name'], closest_bar['geoData']['coordinates'][0],
-                          closest_bar['geoData']['coordinates'][1]))
+        closest_bar = get_closest_bar(list_bars, longitude, latitude)
+        print('Ничего не найдено' if closest_bar is None else
+              'Ближайший бар "{0}", координаты ({1}, {2})'
+              .format(closest_bar['Name'], closest_bar['geoData']['coordinates'][0],
+                      closest_bar['geoData']['coordinates'][1]))
