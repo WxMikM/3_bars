@@ -1,55 +1,85 @@
+import os
 import json
 import math
 
+# путь к файлу
 my_path = './data-2897-2016-11-23.json'
 
 
-def load_data(filepath):
-    with open(filepath, 'r') as f:
-        data = json.load(f)
-
-    return data
-
-
-def get_biggest_bar(data):
-    if not data:
-        return "не найдено"
-    sch = data[0]
-    for el in data:
-        if int(sch['SeatsCount']) < int(el['SeatsCount']):
-            sch = el
-
-    return '{0} : {1} мест'.format(sch['Name'], sch['SeatsCount'])
+def load_bars_from_file(filepath):
+    if not os.path.exists(filepath):
+        return None
+    with open(filepath, 'r') as file_handler:
+        return json.load(file_handler)
 
 
-def get_smallest_bar(data):
-    if not data:
-        return "не найдено"
-    sch = data[0]
-    for el in data:
-        if int(el['SeatsCount']) < int(sch['SeatsCount']):
-            sch = el
+def get_biggest_bar(list_bars):
+    if not list_bars:
+        return None
+    biggest_bar_now = list_bars[0]
+    for bar in list_bars:
+        if int(biggest_bar_now['SeatsCount']) < int(bar['SeatsCount']):
+            biggest_bar_now = bar
 
-    return '{0} : {1} мест'.format(sch['Name'], sch['SeatsCount'])
+    return biggest_bar_now
 
 
-def get_closest_bar(data, longitude, latitude):
-    if not data:
-        return "не найдено"
-    shc = data[0]
-    shc_long = math.sqrt((float(data[0]['geoData']['coordinates'][0]) - longitude) ** 2 +
-                         (float(data[0]['geoData']['coordinates'][1]) - latitude) ** 2)
-    for el in data:
-        temp = math.sqrt((float(el['geoData']['coordinates'][0]) - longitude) ** 2 +
-                         (float(el['geoData']['coordinates'][1]) - latitude) ** 2)
-        if temp < shc_long:
-            shc = el
-            shc_long = temp
+def get_smallest_bar(list_bars):
+    if not list_bars:
+        return None
+    smallest_bar_now = list_bars[0]
+    for bar in list_bars:
+        if int(bar['SeatsCount']) < int(smallest_bar_now['SeatsCount']):
+            smallest_bar_now = bar
 
-    return '{0} : {1}, {2}'.format(shc['Name'], shc['geoData']['coordinates'][0], shc['geoData']['coordinates'][1])
+    return smallest_bar_now
+
+
+def get_closest_bar(list_bars, longitude, latitude):
+    if not list_bars:
+        return None
+    closest_bar_now = list_bars[0]
+    min_distance_now = math.sqrt((float(list_bars[0]['geoData']['coordinates'][0]) - longitude) ** 2 +
+                                 (float(list_bars[0]['geoData']['coordinates'][1]) - latitude) ** 2)
+    for bar in list_bars:
+        temp_distance = math.sqrt((float(bar['geoData']['coordinates'][0]) - longitude) ** 2 +
+                                  (float(bar['geoData']['coordinates'][1]) - latitude) ** 2)
+        if temp_distance < min_distance_now:
+            closest_bar_now = bar
+            min_distance_now = temp_distance
+
+    return closest_bar_now
 
 
 if __name__ == '__main__':
-    print(get_biggest_bar(load_data(my_path)))
-    print(get_smallest_bar(load_data(my_path)))
-    print(get_closest_bar(load_data(my_path), 37,55))
+    data = load_bars_from_file(my_path)
+    if data is None:
+        print('путь к файлу не существует')
+    else:
+        biggest_bar = get_biggest_bar(data)
+        print('Ничего не найдено' if biggest_bar is None else
+              'Самый большой бар "{0}", в нем {1} мест'.format(biggest_bar['Name'], biggest_bar['SeatsCount']))
+
+        smallest_bar = get_smallest_bar(data)
+        print('Ничего не найдено' if smallest_bar is None else
+              'Самый маленький бар "{0}", в нем {1} мест'.format(smallest_bar['Name'], smallest_bar['SeatsCount']))
+
+
+        try:
+            longitude = float(input('Введите долготу: '))
+        except ValueError:
+            longitude = None
+
+        try:
+            latitude = float(input('Введите широту: '))
+        except ValueError:
+            latitude = None
+
+        if not longitude or not latitude:
+            print('Введены неверные координаты.')
+        else:
+            closest_bar = get_closest_bar(data, longitude, latitude)
+            print('Ничего не найдено' if closest_bar is None else
+                  'Ближайший бар "{0}", координаты ({1}, {2})'
+                  .format(closest_bar['Name'], closest_bar['geoData']['coordinates'][0],
+                          closest_bar['geoData']['coordinates'][1]))
