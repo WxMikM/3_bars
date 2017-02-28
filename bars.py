@@ -2,9 +2,6 @@ import os
 import json
 import math
 
-# путь к файлу
-my_path = './data-2897-2016-11-23.json'
-
 
 def load_bars_from_file(filepath):
     if not os.path.exists(filepath):
@@ -52,7 +49,13 @@ def get_closest_bar(list_bars, longitude, latitude):
 
 
 if __name__ == '__main__':
-    list_bars = load_bars_from_file(my_path)
+    list_bars = None
+
+    while list_bars is None:
+        file_path = input('Введите путь к файлу .json : ')
+        list_bars = load_bars_from_file(file_path)
+        if list_bars is None:
+            print('Нет такого файла {0}'.format(file_path))
     
     biggest_bar = get_biggest_bar(list_bars)
     print('Ничего не найдено' if biggest_bar is None else
